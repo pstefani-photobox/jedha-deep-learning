@@ -4,7 +4,7 @@ from models import DeepNet, Dataset
 BATCH_SIZE = 32
 NB_CLASSES = 16
 NUM_EPOCHS = 32
-MODELPATH = '/home/ubuntu/jedha-deep-learning/'
+MODELPATH = 'models/'
 
 DatasetCreator = Dataset(BATCH_SIZE)
 training_data, validation_data = DatasetCreator.create('images/')

@@ -34,9 +34,10 @@ class DeepNet(nn.Module):
         return self.basemodel(input)
 
     def fit(self, training_data, validation_data, criterion, optimizer, num_epochs=16):
-        self.accuracy = []
+        self.tr_accuracy, self.val_accuracy = [], []
         for epoch in range(num_epochs):
             self.train()
+            tr_acc = []
             for inputs, labels in training_data:
                 inputs = inputs.to(self.device)
                 labels = labels.to(self.device)
@@ -44,28 +45,22 @@ class DeepNet(nn.Module):
                 outputs = self.forward(inputs)
                 _, preds = torch.max(outputs, 1)
                 loss = criterion(outputs, labels)
+                tr_acc.append(1.0 * sum(torch.eq(preds, labels).tolist()) / len(preds))
 
                 loss.backward()
                 optimizer.step()
+            self.tr_accuracy.append(np.mean(tr_acc))
             self.eval()
+            val_acc = []
             for inputs, labels in validation_data:
                 inputs = inputs.to(self.device)
                 labels = labels.to(self.device)
                 outputs = self.forward(inputs)
                 _, preds = torch.max(outputs, 1)
 
-                self.accuracy.append(1.0 * sum(torch.eq(preds, labels).tolist()) / len(preds))
-            print('EPOCH #{} ... Validation accuracy : {}'.format(epoch, np.mean(self.accuracy)))
-
-    def save(self, path):
-        import matplotlib
-        matplotlib.use('Agg')
-        import matplotlib.pyplot as plt
-
-        torch.save(self.state_dict(), path+'deepnet.pt')
-        plt.plot(self.accuracy)
-        plt.savefig(path+'deepnet_acc.png')
-
+                val_acc.append(1.0 * sum(torch.eq(preds, labels).tolist()) / len(preds))
+            self.val_accuracy.append(np.mean(val_acc))
+            print('EPOCH #{} ... Validation accuracy : {}'.format(epoch, np.mean(val_acc)))
 
 class Dataset():
 
