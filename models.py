@@ -25,7 +25,13 @@ class DeepNet(nn.Module):
             for p in self.parameters():
                 p.requires_grad = False
 
-        self.basemodel.fc = nn.Linear(self.num_ftrs, n_outputs)
+        if base == 'resnet':
+            self.basemodel.fc = nn.Linear(self.num_ftrs, n_outputs)
+        else:
+            self.basemodel.classifier[6].out_features = n_outputs
+            for p in self.basemodel.classifier[6]:
+                p.requires_grad = True
+    
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.basemodel.to(self.device)
 
