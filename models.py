@@ -7,9 +7,9 @@ from torchvision import models, transforms, datasets
 
 
 class DeepNet(nn.Module):
-
     def __init__(self, base, n_outputs, full_backprop=False):
         super().__init__()
+        # Use an existing architecture to extract image features
         if base == 'vgg':
             self.basemodel = models.vgg11(pretrained=True)
             self.num_ftrs = 512
@@ -21,10 +21,13 @@ class DeepNet(nn.Module):
             self.num_ftrs = 1024
         else:
             raise AttributeError('base arg should be one of vgg, resnet or alexnet')
+
+        # Freeze the weights. We do not always want to backpropagate through ALL the network
         if not full_backprop:
             for p in self.parameters():
                 p.requires_grad = False
 
+        # Change the last layer of classification for our purposes. (our number of classes for example)
         if base == 'resnet':
             self.basemodel.fc = nn.Linear(self.num_ftrs, n_outputs)
         else:
@@ -32,8 +35,10 @@ class DeepNet(nn.Module):
             for p in self.basemodel.classifier[6].parameters():
                 p.requires_grad = True
 
+        # Set the device to cuda if a GPU is available
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.basemodel.to(self.device)
+
 
     def forward(self, input):
         input = Variable(input)
