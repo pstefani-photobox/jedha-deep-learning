@@ -46,8 +46,10 @@ class DeepNet(nn.Module):
 
     def predict(self, input):
         output = self.forward(input)
-        output = self.logsoftmax(output)
-        return torch.multinomial(torch.exp(output), 1)
+        output = torch.exp(self.logsoftmax(output))
+        prediction = torch.argmax(output)
+        probability = torch.max(output)
+        return prediction, probability
 
     def fit(self, training_data, validation_data, criterion, optimizer, num_epochs=16, verbose=True):
         self.tr_accuracy, self.val_accuracy = [], []
