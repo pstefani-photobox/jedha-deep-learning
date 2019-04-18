@@ -34,7 +34,7 @@ class DeepNet(nn.Module):
             self.basemodel.classifier[6].out_features = n_outputs
             for p in self.basemodel.classifier[6].parameters():
                 p.requires_grad = True
-        self.logsoftmax = nn.LogSoftmax(dim=0)
+        self.logsoftmax = nn.LogSoftmax(dim=1)
 
         # Set the device to cuda if a GPU is available
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -47,9 +47,7 @@ class DeepNet(nn.Module):
     def predict(self, input):
         output = self.forward(input)
         output = torch.exp(self.logsoftmax(output))
-        prediction = torch.argmax(output, dim=1)
-        probability = torch.max(output, dim=1)
-        return prediction, probability
+        return torch.max(output, dim=1)
 
     def fit(self, training_data, validation_data, criterion, optimizer, num_epochs=16, verbose=True):
         self.tr_accuracy, self.val_accuracy = [], []
