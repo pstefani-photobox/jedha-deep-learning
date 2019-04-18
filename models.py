@@ -34,17 +34,22 @@ class DeepNet(nn.Module):
             self.basemodel.classifier[6].out_features = n_outputs
             for p in self.basemodel.classifier[6].parameters():
                 p.requires_grad = True
+        self.logsoftmax = nn.LogSoftmax(dim=0)
 
         # Set the device to cuda if a GPU is available
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.basemodel.to(self.device)
 
-
     def forward(self, input):
         input = Variable(input)
         return self.basemodel(input)
 
-    def fit(self, training_data, validation_data, criterion, optimizer, num_epochs=16):
+    def predict(self, input):
+        output = self.forward(input)
+        output = self.logsoftmax(output)
+        return torch.multinomial(torch.exp(output), 1)
+
+    def fit(self, training_data, validation_data, criterion, optimizer, num_epochs=16, verbose=True):
         self.tr_accuracy, self.val_accuracy = [], []
         for epoch in range(num_epochs):
             self.train()
@@ -71,28 +76,7 @@ class DeepNet(nn.Module):
 
                 val_acc.append(1.0 * sum(torch.eq(preds, labels).tolist()) / len(preds))
             self.val_accuracy.append(np.mean(val_acc))
-            print('EPOCH #{} ... Validation accuracy : {}'.format(epoch, np.mean(val_acc)))
-
-class Dataset():
-
-    def __init__(self, batch_size=16):
-        self.data_transforms = {
-            'train': transforms.Compose([transforms.RandomResizedCrop(224),
-                                         transforms.RandomHorizontalFlip(),
-                                         transforms.ToTensor(),
-                                         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]),
-            'val': transforms.Compose([transforms.Resize(224),
-                                        transforms.CenterCrop(224),
-                                        transforms.ToTensor(),
-                                        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
-        }
-        self.batch_size = batch_size
-
-    def create(self, root_dir):
-        train_dataset = datasets.ImageFolder(os.path.join(root_dir, 'train'), self.data_transforms['train'])
-        train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=1)
-        val_dataset = datasets.ImageFolder(os.path.join(root_dir, 'test'), self.data_transforms['val'])
-        val_loader = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=True, num_workers=1)
-        return train_loader, val_loader
+            if(verbose):
+                print('EPOCH #{} ... Validation accuracy : {}'.format(epoch, np.mean(val_acc)))
 
 
