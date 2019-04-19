@@ -44,6 +44,11 @@ class DeepNet(nn.Module):
         input = Variable(input)
         return self.basemodel(input)
 
+    def forward_with_hooks(self, input, layer_index):
+        self.activations = SaveFeatures(list(self.basemodel.children())[layer_index])
+        self.forward(input.unsqueeze(0))
+        return self.activations.features
+
     def predict(self, input):
         output = self.forward(input)
         output = torch.exp(self.logsoftmax(output))
@@ -78,5 +83,15 @@ class DeepNet(nn.Module):
             self.val_accuracy.append(np.mean(val_acc))
             if(verbose):
                 print('EPOCH #{} ... Validation accuracy : {}'.format(epoch, np.mean(val_acc)))
+
+
+class SaveFeatures():
+    def __init__(self, module):
+        self.hook = module.register_forward_hook(self.hook_fn)
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    def hook_fn(self, module, input, output):
+        self.features = torch.tensor(output, requires_grad=True).to(self.device)
+    def close(self):
+        self.hook.remove()
 
 
