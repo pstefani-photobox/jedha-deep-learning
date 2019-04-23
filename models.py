@@ -41,35 +41,44 @@ class DeepNet(nn.Module):
         self.basemodel.to(self.device)
 
     def forward(self, input):
+        """ Forward propagation through the network"""
         input = Variable(input)
         return self.basemodel(input)
 
     def forward_with_hooks(self, input, layer_index):
+        """ Forward propagation with hooks (for feature vizualization """
         self.activations = SaveFeatures(list(self.basemodel.children())[layer_index])
         self.forward(input.unsqueeze(0))
         return self.activations.features
 
     def predict(self, input):
+        """ Forward propagation with prediction """
         output = self.forward(input)
         output = torch.exp(self.logsoftmax(output))
         return torch.max(output, dim=1)
 
     def fit(self, training_data, validation_data, criterion, optimizer, num_epochs=16, verbose=True):
+        """ Training function for the deepnet model """
         self.tr_accuracy, self.val_accuracy = [], []
         for epoch in range(num_epochs):
             self.train()
             tr_acc = []
             for inputs, labels in training_data:
+                # 1 : Convert input tensor and target tensors to GPU if available
                 inputs = inputs.to(self.device)
                 labels = labels.to(self.device)
+                # 2 : Reset the optimizer for the batch
                 optimizer.zero_grad()
+                # 3 : Go through the network. Prediction : Highest value in output (no probas in training)
                 outputs = self.forward(inputs)
                 _, preds = torch.max(outputs, 1)
+                # 4 : Compute the error, between our outputs and the ground truth (labels)
                 loss = criterion(outputs, labels)
-                tr_acc.append(1.0 * sum(torch.eq(preds, labels).tolist()) / len(preds))
-
+                # 5 : Back propagate the errors and adjust the weight according to the optimizer
                 loss.backward()
                 optimizer.step()
+
+                tr_acc.append(1.0 * sum(torch.eq(preds, labels).tolist()) / len(preds))
             self.tr_accuracy.append(np.mean(tr_acc))
             self.eval()
             val_acc = []
