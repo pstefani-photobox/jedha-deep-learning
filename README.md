@@ -1,12 +1,16 @@
 # Deep Learning for Image Recognition  
 
 ## Installation
-
-* Install the requirements using `pip install -r requirements.txt`
-* Install torch depending on your environment (Mac, Ubuntu, Cuda ...)
+Install torch depending on your environment (Mac, Ubuntu, Cuda ...) https://pytorch.org/get-started/locally/
 
 ###### Flickr crawler
-If you want to train a model on your own images, you can do so with `flickr_crawler.py`. Instructions to retrieve the configuration file will be given during the talk.
+
+Install the fickr api:
+`pip install flickrapi`
+
+You will need Flickr API keys as well to run the crawler.
+
+If you want to train a model on your own images, you can do so with `flickr_crawler.py`. You can find an example of a configuration file in the repositiory, `flickr_crawler_config.json` 
 
 ###### Train images
 You can retrieve the pre-downloaded and formatted fruit images used in this talk to train deep networks.
