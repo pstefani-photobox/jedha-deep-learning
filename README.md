@@ -2,6 +2,7 @@
 
 ## Installation
 Install torch depending on your environment (Mac, Ubuntu, Cuda ...) https://pytorch.org/get-started/locally/
+You can check your CUDA version with `nvcc --version`
 
 ###### Flickr crawler
 
