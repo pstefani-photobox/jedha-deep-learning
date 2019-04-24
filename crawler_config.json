@@ -1,0 +1,24 @@
+{
+  "api_key": "",
+  "secret_key": "",
+  "download_path": "/Users/pstefani/Documents/jedha-deep-learning/images/",
+  "queries": [
+    "grape",
+    "banana",
+    "apple",
+    "peaches",
+    "strawberry",
+    "tangerine",
+    "pineapple",
+    "durian",
+    "kiwi",
+    "lemon",
+    "watermelon",
+    "lychee",
+    "avocado",
+    "tomato",
+    "cherry",
+    "blackberry"
+  ],
+  "img_per_class": 200
+}
